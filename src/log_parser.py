@@ -1,5 +1,4 @@
 import re
-
 import pandas as pd
 
 
@@ -10,12 +9,18 @@ class LogParser:
 
     def parse_file(self, file_path):
         data = []
-        with open(file_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                match = re.search(self.log_pattern, line)
-                if match:
-                    data.append(match.groupdict())
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    match = re.search(self.log_pattern, line)
+                    if match:
+                        data.append(match.groupdict())
 
-        df = pd.read_json(pd.DataFrame(data).to_json())  # 確保格式乾淨
-        print(f"✅ Log Parsing 完成: 共讀取 {len(df)} 筆日誌")
-        return df
+            # 直接轉 DataFrame，不需要繞 JSON
+            df = pd.DataFrame(data)
+            print(f"✅ Log Parsing 完成: 共讀取 {len(df)} 筆日誌")
+            return df
+
+        except FileNotFoundError:
+            print(f"❌ Error: 找不到檔案 {file_path}")
+            return pd.DataFrame()
