@@ -1,5 +1,3 @@
-import os
-import pandas as pd
 from dotenv import load_dotenv
 from src.log_parser import LogParser
 from src.vectorizer import LogVectorizer
