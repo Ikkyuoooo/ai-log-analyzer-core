@@ -3,20 +3,27 @@ import pandas as pd
 
 
 class LogParser:
-    def __init__(self, log_pattern=None):
+    def __init__(self, log_pattern: str | None = None):
         # 預設支援常見的 Spring Boot Log 格式
-        self.log_pattern = log_pattern or r'(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \[(?P<thread>.*?)\] (?P<level>\w+)\s+(?P<logger>.*?) - (?P<message>.*)'
+        self.log_pattern = (
+            log_pattern
+            or r"(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) "
+               r"\[(?P<thread>.*?)\] "
+               r"(?P<level>\w+)\s+"
+               r"(?P<logger>.*?) - "
+               r"(?P<message>.*)"
+        )
 
-    def parse_file(self, file_path):
-        data = []
+    def parse_file(self, file_path: str) -> pd.DataFrame:
+        data: list[dict] = []
+
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 for line in f:
                     match = re.search(self.log_pattern, line)
                     if match:
                         data.append(match.groupdict())
 
-            # 直接轉 DataFrame，不需要繞 JSON
             df = pd.DataFrame(data)
             print(f"✅ Log Parsing 完成: 共讀取 {len(df)} 筆日誌")
             return df
