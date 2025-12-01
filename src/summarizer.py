@@ -31,16 +31,16 @@ class LogSummarizer:
 
         情況 A：如果是正常業務行為（如 INFO logs, 查詢成功, 啟動成功, 定時任務）, 請回傳：
         {{
-            "is_anomaly": false,
-            "summary": "簡短說明這是什麼正常行為 (例如：使用者搜尋操作、系統啟動流程)"
+            "是否異常": false,
+            "摘要": "簡短說明這是什麼正常行為 (例如：使用者搜尋操作、系統啟動流程)"
         }}
 
         情況 B：如果是錯誤或異常（如 ERROR, WARN, Timeout, Exception）, 請回傳：
         {{
-            "is_anomaly": true,
-            "error_type": "錯誤類型簡述",
-            "root_cause": "推測的根本原因",
-            "solution": "建議解決方案"
+            "是否異常": true,
+            "錯誤類型": "錯誤類型簡述",
+            "根本原因": "推測的根本原因",
+            "解決方案": "建議解決方案"
         }}
         """
 
@@ -56,6 +56,6 @@ class LogSummarizer:
         except Exception as e:
             print(f"摘要生成掛了: {e}")
             return json.dumps({
-                "is_anomaly": False,
-                "summary": "分析服務暫時掛掉了 (Mock Fallback)"
+                "是否異常": False,
+                "摘要": "分析服務暫時掛掉了 (Mock Fallback)"
             }, ensure_ascii=False)
