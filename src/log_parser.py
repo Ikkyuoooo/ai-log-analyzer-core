@@ -25,7 +25,7 @@ class LogParser:
                         data.append(match.groupdict())
 
             df = pd.DataFrame(data)
-            print(f"Log Parsing 完成: 共讀取 {len(df)} 筆日誌")
+            print(f"Log 資料: 共讀取 {len(df)} 筆")
             return df
 
         except FileNotFoundError:

@@ -8,8 +8,8 @@ import google.generativeai as genai
 
 class LogVectorizer:
     """
-    負責呼叫 Gemini Embedding API, 將 log message 轉成向量
-    失敗時會 fallback 成隨機向量, 並把 mode 標記為 'mock'
+    負責 call Gemini Embedding API，把 log message 轉成向量
+    如果掛了就 fallback 用隨機向量，mode 會標記成 'mock'
     """
 
     def __init__(self):
@@ -30,11 +30,11 @@ class LogVectorizer:
 
     def get_embeddings(self, text_list: Sequence[str]):
         """
-        使用 Google Gemini 取得文字向量
+        用 Google Gemini 來拿文字向量
         :param text_list: list[str]
         :return: numpy.ndarray, shape = (n_samples, embedding_dim)
         """
-        print(f"連線 Google Gemini Embeddings ({self.model_name})...")
+        print(f"開始連 Google Gemini Embeddings ({self.model_name})...")
 
         embeddings: list[list[float]] = []
 
@@ -42,7 +42,7 @@ class LogVectorizer:
             for text in text_list:
                 clean_text = str(text).replace("\n", " ")
 
-                # 呼叫 Google Embedding API
+                # call Google Embedding API
                 result = genai.embed_content(
                     model=self.model_name,
                     content=clean_text,
@@ -66,8 +66,8 @@ class LogVectorizer:
             return np.array(embeddings)
 
         except Exception as e:
-            print(f"Google Embedding Error: {e}")
-            print("切換至 Mock 向量模式：產生隨機向量...")
+            print(f"Google embedding 掛了: {e}")
+            print("改用 Mock 模式，直接生隨機向量...")
             self.mode = "mock"
 
             # 預設 768 維, 實務上可以改成從成功回傳的 embedding len 推導

@@ -21,7 +21,7 @@ class ClusterEngine:
             print("樣本數過少(＜2), 所有資料直接歸為同一群(cluster 0)")
             return [0] * n_samples
 
-        print("🔄 正在尋找最佳分群數量(Auto-Clustering)...")
+        print("正在尋找最佳分群數量(Auto-Clustering)...")
 
         best_k = self.min_k
         best_score = -1.0

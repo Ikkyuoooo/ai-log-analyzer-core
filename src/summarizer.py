@@ -18,7 +18,7 @@ class LogSummarizer:
 
     def summarize_cluster(self, logs_sample):
         """
-        使用 Google Gemini 進行摘要, 並判斷該群組是否為異常
+        用 Google Gemini 來做摘要，順便判斷這群 log 是不是有異常
         """
         prompt = f"""
         以下是一組被分群演算法(K-Means)歸類在一起的 System Logs
@@ -54,8 +54,8 @@ class LogSummarizer:
             return clean_text
 
         except Exception as e:
-            print(f"Summarization Error: {e}")
+            print(f"摘要生成掛了: {e}")
             return json.dumps({
                 "is_anomaly": False,
-                "summary": "分析服務暫時無法使用 (Mock Fallback)"
+                "summary": "分析服務暫時掛掉了 (Mock Fallback)"
             }, ensure_ascii=False)
