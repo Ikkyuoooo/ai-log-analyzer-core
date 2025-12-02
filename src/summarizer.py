@@ -5,8 +5,9 @@ import json
 
 class LogSummarizer:
     def __init__(self):
+        # 建議：從環境變數讀取，或者你也可以先寫死在這裡測試 (但不要上傳到 GitHub)
         api_key = os.getenv("GEMINI_API_KEY")
-        # 預設使用 gemini-2.0-flash
+        # 預設使用 gemini-2.0-flash，速度快且便宜
         self.model_name = os.getenv("GEMINI_SUMMARY_MODEL", "gemini-2.0-flash")
 
         if api_key:
@@ -21,9 +22,18 @@ class LogSummarizer:
         """
         使用 Google Gemini 進行摘要, 並強制輸出乾淨的英文 JSON (無 Markdown)。
         """
-        # 這裡將 Prompt 的指令改為全英文，並強調 Output Language
+
+        # 1. Mock 模式檢查 (如果沒有 Key，直接回傳假資料，不要浪費時間)
+        if self.mode == "mock":
+            return json.dumps({
+                "is_anomaly": False,
+                "summary": "Mock Mode: API Key not found. Returning sample data.",
+                "impact": "None"
+            }, indent=4)
+
+        # 2. 設定 Prompt (全英文 SRE 角色)
         prompt = f"""
-        You are a Senior Backend Engineer.
+        You are a Senior SRE (Site Reliability Engineer).
         The following are a group of System Logs clustered by K-Means.
         Please analyze these logs and determine if they represent a system anomaly.
 
@@ -32,36 +42,39 @@ class LogSummarizer:
 
         Please strictly follow these rules and return a raw JSON object (do NOT use Markdown ```json tags):
 
-        **CRITICAL RULE 1: All values in the JSON response must be in English.**
-        **CRITICAL RULE 2: Do NOT use Markdown formatting (like **bold** or *italic*) inside the JSON values. Use plain text only.**
-        
-        Case A: If it is normal business behavior (e.g., INFO logs, successful queries, startup, scheduled jobs), return:
+        **CRITICAL RULE 1: All Keys and Values in the JSON response must be in English.**
+        **CRITICAL RULE 2: Do NOT use Markdown formatting inside the JSON values.**
+
+        Case A: If it is normal business behavior (e.g., INFO logs, successful queries, startup), return:
         {{
-            "是否異常": false,
-            "摘要": "Brief description of the normal behavior (e.g., User search operation)"
+            "is_anomaly": false,
+            "summary": "Brief description of the normal behavior",
+            "impact": "None (Normal Traffic)"
         }}
-        
+
         Case B: If it is an error or anomaly (e.g., ERROR, WARN, Timeout, Exception), return:
         {{
-            "是否異常": true,
-            "錯誤類型": "Short description of the error type",
-            "根本原因": "Detailed explanation of the root cause (Plain text only)",
-            "解決方案": "Step-by-step solution suggestions (Plain text only)"
+            "is_anomaly": true,
+            "error_type": "Short description of the error type",
+            "root_cause": "Detailed explanation of the root cause",
+            "action_items": "Step-by-step solution suggestions"
         }}
         """
 
         try:
-            if not self.model:
-                raise Exception("No API Key configured")
-
+            # 3. 呼叫 Gemini
             response = self.model.generate_content(prompt)
-            # 清理可能的回傳格式
+
+            # 4. 清理回傳格式 (去掉可能存在的 Markdown block)
             clean_text = response.text.replace("```json", "").replace("```", "").strip()
             return clean_text
 
         except Exception as e:
-            print(f"Error: {e}")
+            # 5. 錯誤處理 (Error Handling) - 保持 Schema 一致！
+            print(f"Gemini API Error: {e}")
             return json.dumps({
-                "是否異常": False,
-                "摘要": "分析服務暫時無法使用 (Mock Fallback)"
-            }, ensure_ascii=False)
+                "is_anomaly": False,
+                "error_type": "Analysis Service Error",
+                "root_cause": f"API Call Failed: {str(e)}",
+                "action_items": "Check API Key or Internet Connection."
+            }, indent=4)
